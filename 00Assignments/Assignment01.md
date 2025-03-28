@@ -4,7 +4,7 @@
 
 ### **Course:** Mobile App Development (Dart & Flutter)  
 ### **Instructor:** Syed M Arsalan Shah  
-### **Due Date:**03-04-2025 **  
+### **Due Date:** 03-04-2025   
 ### **Submission Platform:** GitHub  
 
 ---
