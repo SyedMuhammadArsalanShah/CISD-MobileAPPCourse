@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:google_fonts/google_fonts.dart';
@@ -19,7 +21,46 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SurahIndexScreen(),
+      home: SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    Timer(
+      Duration(seconds: 3),
+      () {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SurahIndexScreen(),
+            ));
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          "مصحف",
+          style: GoogleFonts.amiriQuran(fontSize: 45, color: Colors.white),
+        ),
+      ),
+      backgroundColor: Colors.indigo[900],
     );
   }
 }
@@ -35,10 +76,13 @@ class _SurahIndexScreenState extends State<SurahIndexScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         centerTitle: true,
-          title: Text("مصحف",style: GoogleFonts.amiri(),),
+        title: Text(
+          "مصحف",
+          style: GoogleFonts.amiri(),
         ),
+      ),
       body: ListView.builder(
         itemCount: 114,
         itemBuilder: (context, index) {
@@ -78,9 +122,9 @@ class _DetailSurahState extends State<DetailSurah> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
-          title: Text(quran.getSurahName(widget.surahNum)),
-        ),
+      appBar: AppBar(
+        title: Text(quran.getSurahName(widget.surahNum)),
+      ),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(15.0),
@@ -94,12 +138,12 @@ class _DetailSurahState extends State<DetailSurah> {
                   textAlign: TextAlign.right,
                   style: GoogleFonts.amiri(),
                 ),
-                subtitle: Text(quran.getVerseTranslation(
-                    widget.surahNum, index + 1,
-                    translation: quran.Translation.urdu),
-                    // textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.right,
-                    ),
+                subtitle: Text(
+                  quran.getVerseTranslation(widget.surahNum, index + 1,
+                      translation: quran.Translation.urdu),
+                  // textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                ),
               );
             },
           ),
