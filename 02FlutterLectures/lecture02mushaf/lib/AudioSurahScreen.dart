@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lecture02mushaf/DetailAudio.dart';
 import 'package:lecture02mushaf/DetailSurah.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -29,7 +30,7 @@ class _AudioSurahScreenState extends State<AudioSurahScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DetailSurah(index + 1),
+                      builder: (context) => DetailAudio(index + 1),
                     ));
               },
               leading: CircleAvatar(
