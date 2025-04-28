@@ -10,7 +10,7 @@ void main() {
   print(number1);
 
   // String data type
-  String name = "SMAS";
+  String name = "S M Arsalan SHah";
 
   // Integer data type
   int favNum = 7;
@@ -20,6 +20,12 @@ void main() {
 
   // Boolean data type
   bool isGameFun = false;
+
+
+// Num Data Types 
+
+num number2=5.9;
+print(number2);
 
   // Printing variables using string concatenation and interpolation
   print("Student Name " + name);
