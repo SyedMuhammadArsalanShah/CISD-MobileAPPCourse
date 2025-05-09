@@ -124,8 +124,16 @@ class _ChaptersSCRState extends State<ChaptersSCR> {
           itemBuilder: (context, index) {
             var hbook = listChapters[index];
             return ListTile(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          HadithSCR(hbook["bookSlug"], hbook["chapterNumber"]),
+                    ));
+              },
               leading: CircleAvatar(
-                child: Text( hbook["chapterNumber"]),
+                child: Text(hbook["chapterNumber"]),
               ),
               title: Text(
                 hbook["chapterArabic"],
@@ -133,7 +141,7 @@ class _ChaptersSCRState extends State<ChaptersSCR> {
                 style: GoogleFonts.amiriQuran(),
               ),
               subtitle: Column(
-                crossAxisAlignment:CrossAxisAlignment.end ,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     hbook["chapterUrdu"],
@@ -143,6 +151,86 @@ class _ChaptersSCRState extends State<ChaptersSCR> {
                   Text(hbook["chapterEnglish"]),
                 ],
               ),
+            );
+          }),
+    );
+  }
+}
+
+class HadithSCR extends StatefulWidget {
+  var book;
+  var chapterNumber;
+  HadithSCR(this.book, this.chapterNumber, {super.key});
+
+  @override
+  State<HadithSCR> createState() => _HadithSCRState();
+}
+
+class _HadithSCRState extends State<HadithSCR> {
+  Map mapHadiths = {};
+  List listHadiths = [];
+  Future apiHadiths() async {
+    http.Response response = await http.get(Uri.parse(
+        "https://hadithapi.com/public/api/hadiths?apiKey=\$2y\$10\$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e&book=${widget.book}&chapter=${widget.chapterNumber}&paginate=100000"));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        mapHadiths = jsonDecode(response.body);
+        listHadiths = mapHadiths["hadiths"]["data"];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    apiHadiths();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView.builder(
+          itemCount: listHadiths.length,
+          itemBuilder: (context, index) {
+            var hbook = listHadiths[index];
+            return Center(
+              child: Card(
+                child: ListTile(
+                  // leading: CircleAvatar(
+                  //   child: Text(hbook["hadithNumber"]),
+                  // ),
+                  title: Column(
+                    children: [
+                 CircleAvatar(
+                    child: Text(hbook["hadithNumber"]),
+                  ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Card(
+                          color: Colors.teal,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              hbook["hadithArabic"],
+                              textAlign: TextAlign.right,
+                              style: GoogleFonts.amiriQuran(color: Colors.white,fontSize: 22 ),
+                            ),
+                          ),
+                          
+                        ),
+                      ),
+                      Text(
+                    hbook["hadithUrdu"],
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.notoNastaliqUrdu(fontSize: 12),)
+                    ],
+                  ),
+             
+                  ),
+                ),
+              
             );
           }),
     );
