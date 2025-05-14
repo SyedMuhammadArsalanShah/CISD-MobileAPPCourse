@@ -1,0 +1,13 @@
+[
+{"type":"header","version":"5.2.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"cisd"},
+{"type":"table","name":"info","database":"cisd","data":
+[
+{"Id":"1","Name":"","Email":"","Password":""},
+{"Id":"2","Name":"demo","Email":"demo@gmail.com","Password":""},
+{"Id":"3","Name":"hussain","Email":"hussain@gmail.com","Password":"12345"},
+{"Id":"4","Name":"husnain","Email":"husnain@gmail.com","Password":"12345678"},
+{"Id":"5","Name":"faiza","Email":"faiza@gmail.com","Password":"$2y$10$VfF5jIb65WUypRCqjp1U.eL2kZzMasmNT0PpTW9f03jqggm8vprpS"}
+]
+}
+]
