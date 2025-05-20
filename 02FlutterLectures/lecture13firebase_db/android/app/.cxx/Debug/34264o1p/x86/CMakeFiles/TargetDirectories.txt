@@ -1,0 +1,2 @@
+D:/CISD/02FlutterLectures/lecture13firebase_db/android/app/.cxx/Debug/34264o1p/x86/CMakeFiles/edit_cache.dir
+D:/CISD/02FlutterLectures/lecture13firebase_db/android/app/.cxx/Debug/34264o1p/x86/CMakeFiles/rebuild_cache.dir
