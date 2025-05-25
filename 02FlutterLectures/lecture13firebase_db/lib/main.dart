@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:lecture13firebase_db/firebase_options.dart';
 
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: SplashSCR(),
+      // home: Home(),
     );
   }
 }
@@ -212,6 +214,15 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
+
+  DatabaseReference databaseReference =
+      FirebaseDatabase.instance.ref("students");
+
+  final key = FirebaseAuth.instance.currentUser!.uid;
+  int id = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,14 +232,115 @@ class _HomeState extends State<Home> {
           IconButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SignIn(),));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SignIn(),
+                    ));
               },
               icon: Icon(Icons.logout))
         ],
       ),
-      body: Center(
-        child: Text("Welcome In Our Firebase APP"),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                  label: Text("Search BY Title"),
+                  hintText: "Search Here ......"),
+              onChanged: (String value) {
+                setState(() {});
+              },
+            ),
+          ),
+        ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          meraModal(null);
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  void meraModal(var postid) async {
+    titleController.clear();
+    descController.clear();
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+              32, 32, 32, MediaQuery.of(context).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(hintText: "Enter Your Title"),
+              ),
+              TextField(
+                controller: descController,
+                decoration: InputDecoration(hintText: "Enter Your description"),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    String title = titleController.text.toString();
+                    String desc = descController.text.toString();
+                    
+                    if (postid == null) {
+                      // createData(data);
+
+                      id++;
+
+                      databaseReference.child(key).child("$id").set({
+                        "ID": id,
+                        "Title": title,
+                        "Description": desc,
+                        "DateOfPost": DateTime.now().toString()
+                      }).then(
+                        (value) {
+                          print("Successfully created ");
+                        },
+                      ).onError(
+                        (error, stackTrace) {
+                          print("failed task ");
+                        },
+                      );
+                     } 
+                     
+                     else {
+                    //   // update
+
+                    //   databaseReference.child(key).child("$postid").update({
+                    //     "ID": postid,
+                    //     "Title": titleController.text,
+                    //     "Description": descController.text,
+                    //     "DateOfPost": DateTime.now().toString()
+                    //   }).then(
+                    //     (value) {
+                    //       print("Successfully created ");
+                    //     },
+                    //   ).onError(
+                    //     (error, stackTrace) {
+                    //       print("failed task ");
+                    //     },
+                    //   );
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: postid == null ? Text("Add") : Text("update"))
+            ],
+          ),
+        );
+      },
     );
   }
 }
