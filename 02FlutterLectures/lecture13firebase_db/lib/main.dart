@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:lecture13firebase_db/firebase_options.dart';
 
@@ -255,6 +256,107 @@ class _HomeState extends State<Home> {
               },
             ),
           ),
+          // Expanded(
+          //   child: StreamBuilder(
+          //     stream: databaseReference.child(key).onValue,
+          //     builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+          //       if (!snapshot.hasData) {
+          //         return Center(child: CircularProgressIndicator());
+          //       } else {
+          //         Map<dynamic, dynamic> map =
+          //             snapshot.data!.snapshot.value as dynamic;
+          //         List<dynamic> item = map.values.toList();
+          //         return ListView.builder(
+          //           itemCount: snapshot.data!.snapshot.children.length,
+          //           itemBuilder: (context, index) {
+          //             return ListTile(
+          //               title: Text(item[index]["Title"].toString()),
+          //               subtitle: Text(item[index]["Description"].toString()),
+          //             );
+          //           },
+          //         );
+          //       }
+          //     },
+          //   ),
+          // )
+
+          Expanded(
+            child: FirebaseAnimatedList(
+                query: databaseReference.child(key),
+                itemBuilder: (context, snapshot, animation, index) {
+                  String title = snapshot.child("Title").value.toString();
+                  if (searchController.text.isEmpty) {
+                    return ListTile(
+                        title: Text(snapshot.child("Title").value.toString()),
+                        subtitle: Text(
+                            snapshot.child("Description").value.toString()),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                final id =
+                                    snapshot.child("Id").value.toString();
+                                meraModal(id);
+                              },
+                              tooltip: 'Edit',
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                final id =
+                                    snapshot.child("Id").value.toString();
+                                databaseReference.child(key).child(id).remove();
+                              },
+                              tooltip: 'Delete',
+                            ),
+                          ],
+                        ));
+                  } else if (title.contains(searchController.text.toString())) {
+                    return ListTile(
+                        title: Text(snapshot.child("Title").value.toString()),
+                        subtitle: Text(
+                            snapshot.child("Description").value.toString()),
+                        trailing: PopupMenuButton(
+                          icon: Icon(Icons.menu_sharp),
+                          itemBuilder: (context) {
+                            return [
+                              PopupMenuItem(
+                                  value: 1,
+                                  child: ListTile(
+                                    onTap: () {
+                                      final id =
+                                          snapshot.child("Id").value.toString();
+                                      meraModal(int.parse(id));
+                                    },
+                                    leading: Icon(Icons.edit),
+                                    title: Text("Edit"),
+                                  )),
+                              PopupMenuItem(
+                                  value: 2,
+                                  child: ListTile(
+                                    onTap: () {
+                                      final id =
+                                          snapshot.child("Id").value.toString();
+
+                                      databaseReference
+                                          .child(key)
+                                          .child(id)
+                                          .remove();
+                                      Navigator.pop(context);
+                                    },
+                                    leading: Icon(Icons.delete),
+                                    title: Text("Delete"),
+                                  ))
+                            ];
+                          },
+                        ));
+                  } else {
+                    return Container();
+                  }
+                }),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -294,7 +396,7 @@ class _HomeState extends State<Home> {
                   onPressed: () async {
                     String title = titleController.text.toString();
                     String desc = descController.text.toString();
-                    
+
                     if (postid == null) {
                       // createData(data);
 
@@ -314,25 +416,23 @@ class _HomeState extends State<Home> {
                           print("failed task ");
                         },
                       );
-                     } 
-                     
-                     else {
-                    //   // update
+                    } else {
+                      // update
 
-                    //   databaseReference.child(key).child("$postid").update({
-                    //     "ID": postid,
-                    //     "Title": titleController.text,
-                    //     "Description": descController.text,
-                    //     "DateOfPost": DateTime.now().toString()
-                    //   }).then(
-                    //     (value) {
-                    //       print("Successfully created ");
-                    //     },
-                    //   ).onError(
-                    //     (error, stackTrace) {
-                    //       print("failed task ");
-                    //     },
-                    //   );
+                      databaseReference.child(key).child("$postid").update({
+                        "ID": postid,
+                        "Title": titleController.text,
+                        "Description": descController.text,
+                        "DateOfPost": DateTime.now().toString()
+                      }).then(
+                        (value) {
+                          print("Successfully created ");
+                        },
+                      ).onError(
+                        (error, stackTrace) {
+                          print("failed task ");
+                        },
+                      );
                     }
                     Navigator.pop(context);
                   },

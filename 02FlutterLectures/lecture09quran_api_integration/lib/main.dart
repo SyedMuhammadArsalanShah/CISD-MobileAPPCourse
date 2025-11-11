@@ -1,174 +1,139 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(IlmiLibraryApp());
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+class IlmiLibraryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Ilmi Library – اسلامی و ادبی کتابیں',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.teal,
+        textTheme: GoogleFonts.notoNastaliqUrduTextTheme(),
       ),
-      home: SurahIndexSCR(),
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
     );
   }
 }
 
-class SurahIndexSCR extends StatefulWidget {
-  const SurahIndexSCR({super.key});
+class Book {
+  final String title;
+  final String author;
+  final String url;
+  final String cover;
+  final String category;
 
-  @override
-  State<SurahIndexSCR> createState() => _SurahIndexSCRState();
+  Book({required this.title, required this.author, required this.url, required this.cover, required this.category});
+
+  factory Book.fromJson(Map<String, dynamic> json) {
+    return Book(
+      title: json['title'],
+      author: json['author'],
+      url: json['url'],
+      cover: json['cover'],
+      category: json['category'],
+    );
+  }
 }
 
-class _SurahIndexSCRState extends State<SurahIndexSCR> {
-  Map mapresp = {};
-  List listresp = [];
-  Future apicallkardo() async {
-    http.Response response =
-        await http.get(Uri.parse("https://api.alquran.cloud/v1/surah"));
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
 
-    if (response.statusCode == 200) {
-      setState(() {
-        mapresp = jsonDecode(response.body);
-        listresp = mapresp["data"];
-      });
-    }
-  }
+class _HomeScreenState extends State<HomeScreen> {
+  List<Book> allBooks = [];
+  bool isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    apicallkardo();
+    loadBooks();
+  }
+
+  Future<void> loadBooks() async {
+    final String jsonString = await rootBundle.loadString('assets/books.json');
+    final List<dynamic> jsonData = json.decode(jsonString)['books'];
+    setState(() {
+      allBooks = jsonData.map((e) => Book.fromJson(e)).toList();
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView.builder(
-        itemCount: listresp.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        DetailSurah(listresp[index]["number"]),
-                  ));
-            },
-            leading: CircleAvatar(
-              child: Text(listresp[index]["number"].toString()),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Ilmi Library'),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'اسلامی کتب'),
+              Tab(text: 'اردو ناولز'),
+            ],
+          ),
+        ),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : TabBarView(
+                children: [
+                  BookList(books: allBooks, category: 'Islamic'),
+                  BookList(books: allBooks, category: 'Novel'),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class BookList extends StatelessWidget {
+  final List<Book> books;
+  final String category;
+
+  BookList({required this.books, required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredBooks = books.where((b) => b.category == category).toList();
+
+    return ListView.builder(
+      itemCount: filteredBooks.length,
+      itemBuilder: (context, index) {
+        final book = filteredBooks[index];
+        return ListTile(
+          leading: Image.network(book.cover, width: 50, fit: BoxFit.cover),
+          title: Text(book.title),
+          subtitle: Text(book.author),
+          trailing: Icon(Icons.arrow_forward_ios),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PDFViewerScreen(title: book.title, url: book.url),
             ),
-            title: Text(listresp[index]["name"] +
-                " | " +
-                listresp[index]["englishName"]),
-            subtitle: Text(listresp[index]["englishNameTranslation"]),
-            trailing: Text(listresp[index]["numberOfAyahs"].toString()),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-class DetailSurah extends StatefulWidget {
-  var surahnum;
-  DetailSurah(this.surahnum, {super.key});
+class PDFViewerScreen extends StatelessWidget {
+  final String title;
+  final String url;
 
-  @override
-  State<DetailSurah> createState() => _DetailSurahState();
-}
-
-class _DetailSurahState extends State<DetailSurah> {
-  Map mapresp = {};
-  List listresp = [];
-  Map map = {};
-  List list = [];
-  Future apicallkardo() async {
-    var surahNumber = widget.surahnum;
-    http.Response response = await http
-        .get(Uri.parse("https://api.alquran.cloud/v1/surah/${surahNumber}"));
-
-    if (response.statusCode == 200) {
-      setState(() {
-        mapresp = jsonDecode(response.body);
-        listresp = mapresp["data"]["ayahs"];
-      });
-    }
-  }
-
-  Future apiurduTranslation() async {
-    var surahNumber = widget.surahnum;
-    http.Response response = await http.get(Uri.parse(
-        "https://api.alquran.cloud/v1/surah/${surahNumber}/ur.maududi"));
-
-    if (response.statusCode == 200) {
-      setState(() {
-        map = jsonDecode(response.body);
-        list = map["data"]["ayahs"];
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    apicallkardo();
-    apiurduTranslation();
-  }
+  PDFViewerScreen({required this.title, required this.url});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: listresp.isNotEmpty
-          ? ListView.builder(
-              itemCount: listresp.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    title: Column(
-                      // mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(listresp[index]["text"], textAlign: TextAlign.right,style:GoogleFonts.amiriQuran() ,),
-                        Text(list[index]["text"], textAlign: TextAlign.right,style:GoogleFonts.notoNastaliqUrdu() ,)
-                      ],
-                    ),
-               
-                  ),
-                );
-              },
-            )
-          : Center(child: CircularProgressIndicator()),
+      appBar: AppBar(title: Text(title)),
+      body: SfPdfViewer.network(url),
     );
   }
 }
